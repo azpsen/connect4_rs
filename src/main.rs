@@ -23,6 +23,10 @@ fn main() {
         
         place_piece(&mut board, &mut column_heights, 1, p1_column);
         
+        if check_win(&board) {
+            break;
+        }
+        
         show_board(&board);
         
         let p2_column: usize = get_player_input(2, &column_heights);
@@ -33,13 +37,18 @@ fn main() {
         
         place_piece(&mut board, &mut column_heights, 2, p2_column);
         
+        if check_win(&board) {
+            break;
+        }
+        
         show_board(&board);
     }
 }
 
 fn get_player_input(player: u8, column_heights: &[usize; WIDTH]) -> usize {
     loop {
-        println!("Player {player}, pick a column (q to quit): ");
+        print!("Player {player}, pick a column (q to quit): ");
+        io::stdout().flush();
         
         let mut column = String::new();
         io::stdin()
@@ -62,7 +71,7 @@ fn get_player_input(player: u8, column_heights: &[usize; WIDTH]) -> usize {
                 continue;
             }
             
-            if (column_heights[column] == HEIGHT) {
+            if column_heights[column] == HEIGHT {
                 println!("That column is full");
                 continue;
             }
@@ -73,8 +82,108 @@ fn get_player_input(player: u8, column_heights: &[usize; WIDTH]) -> usize {
 }
 
 fn place_piece(board: &mut [char; WIDTH * HEIGHT], column_heights: &mut [usize; WIDTH], player: u8, column: usize) {
-    board[(column - 1) * HEIGHT + (HEIGHT - column_heights[column] - 1)] = if player == 1 { 'x' } else { 'o' };
+    board[get_board_index(HEIGHT - column_heights[column] - 1, column - 1)] = if player == 1 { 'x' } else { 'o' };
     column_heights[column] += 1;
+}
+
+// Find any horizontal 4-in-a-row sequences
+// Returns x or o depending on player, or ' ' if none are found
+fn get_horiz_sequence(board: &[char; WIDTH * HEIGHT]) -> char {
+    let mut count: u8 = 0;
+    for i in 0..HEIGHT {
+        for j in 0..WIDTH-3 {
+            let elem = board[get_board_index(i, j)];
+            if elem == '-' { continue; }
+            if elem == board[get_board_index(i, j + 1)] &&
+               elem == board[get_board_index(i, j + 2)] &&
+               elem == board[get_board_index(i, j + 3)] {
+                   return elem;
+               }
+        }
+    }
+    ' '
+}
+
+// Find any vertical 4-in-a-row sequences
+// Returns x or o depending on player, or ' ' if none are found
+fn get_vert_sequence(board: &[char; WIDTH * HEIGHT]) -> char {
+    let mut count: u8 = 0;
+    for i in 0..HEIGHT-3 {
+        for j in 0..WIDTH {
+            let elem = board[get_board_index(i, j)];
+            if elem == '-' { continue; }
+            if elem == board[get_board_index(i + 1, j)] &&
+               elem == board[get_board_index(i + 2, j)] &&
+               elem == board[get_board_index(i + 3, j)] {
+                   return elem;
+               }
+        }
+    }
+    ' '
+}
+
+// Find any positive diagonal 4-in-a-row sequences
+// Returns x or o depending on player, or ' ' if none are found
+fn get_diag_sequence(board: &[char; WIDTH * HEIGHT]) -> char {
+    let mut count: u8 = 0;
+    for i in 0..HEIGHT-3 {
+        for j in 0..WIDTH-3 {
+            let elem = board[get_board_index(i, j)];
+            if elem == '-' { continue; }
+            if elem == board[get_board_index(i + 1, j + 1)] &&
+               elem == board[get_board_index(i + 2, j + 2)] &&
+               elem == board[get_board_index(i + 3, j + 3)] {
+                   return elem;
+               }
+        }
+    }
+    ' '
+}
+
+// Find any negative diagonal 4-in-a-row sequences
+// Returns x or o depending on player, or ' ' if none are found
+fn get_counter_diag_sequence(board: &[char; WIDTH * HEIGHT]) -> char {
+    let mut count: u8 = 0;
+    for i in 0..HEIGHT-3 {
+        for j in 3..WIDTH {
+            let elem = board[get_board_index(i, j)];
+            if elem == '-' { continue; }
+            if elem == board[get_board_index(i + 1, j - 1)] &&
+               elem == board[get_board_index(i + 2, j - 2)] &&
+               elem == board[get_board_index(i + 3, j - 3)] {
+                   return elem;
+               }
+        }
+    }
+    ' '
+}
+
+fn find_sequence(board: &[char; WIDTH * HEIGHT]) -> char {
+    let w = get_horiz_sequence(&board);
+    if w != ' ' { return w; };
+    
+    let w = get_vert_sequence(&board);
+    if w != ' ' { return w; };
+    
+    let w = get_diag_sequence(&board);
+    if w != ' ' { return w; }
+    
+    let w = get_counter_diag_sequence(&board);
+    if w != ' ' { return w; };
+    
+    ' '
+}
+
+fn check_win(board: &[char; WIDTH * HEIGHT]) -> bool {
+    let w = find_sequence(&board);
+    
+    if w == ' ' { return false; }
+    
+    println!("");
+    println!("Player {} wins!", if w == 'x' { 1 } else { 2 });
+    println!("");
+    show_board(&board);
+    return true;
 }
 
 // Print the board to console
@@ -83,7 +192,7 @@ fn show_board(board: &[char; WIDTH * HEIGHT]) {
     
     for i in 0..HEIGHT {
         for j in 0..WIDTH {
-            print!("{} ", board[j * HEIGHT + i]);
+            print!("{} ", board[get_board_index(i, j)]);
             io::stdout().flush().unwrap();
         }
         println!("");
@@ -99,4 +208,9 @@ fn show_board(board: &[char; WIDTH * HEIGHT]) {
     println!("");
     println!("^^ Columns ^^");
     println!("");
+}
+
+// Get board index from i, j 2d reference
+fn get_board_index(i: usize, j: usize) -> usize {
+    j * HEIGHT + i
 }
