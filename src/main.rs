@@ -4,46 +4,69 @@ use std::io::Write;
 const WIDTH: usize = 7;
 const HEIGHT: usize = 6;
 
-const BOARD: [char; WIDTH * HEIGHT] = ['o'; WIDTH * HEIGHT];
+const BOARD: [char; WIDTH * HEIGHT] = ['-'; WIDTH * HEIGHT];
 
 fn main() {
     println!("");
     println!("---- Welcome to Connect 4! ----");
     println!("");
     
-    let mut p1_column = String::new();
-    let mut p2_column = String::new();
+    show_board();
     
-    'game: loop {
-        show_board();
+    loop {
+        let p1_column: usize = get_player_input(1);
         
-        'p1_guess: loop {
-            println!("Player 1, pick a column (q to quit): ");
-            
-            let mut p1_column = String::new();
-            io::stdin()
-                .read_line(&mut p1_column)
-                .expect("Failed to read input");
-            
-            if p1_column.trim() == "q" {
-                break 'game;
-            } else {
-                let p1_column : usize = match p1_column.trim().parse() {
-                    Ok(num) => num,
-                    Err(_) => {
-                        println!("Please enter a number from 1 to {}", WIDTH);
-                        continue 'p1_guess;
-                    }
-                };
-                if p1_column > WIDTH {
-                    println!("Please enter a number from 1 to {}", WIDTH);
-                    continue 'p1_guess;
-                }
-            }
+        if p1_column == WIDTH + 1 {
+            break;
         }
         
+        place_piece(1, p1_column);
         
+        show_board();
+        
+        let p2_column: usize = get_player_input(2);
+        
+        if p2_column == WIDTH + 1 {
+            break;
+        }
+        
+        place_piece(2, p2_column);
+        
+        show_board();
     }
+}
+
+fn get_player_input(player: u8) -> usize {
+    loop {
+        println!("Player {player}, pick a column (q to quit): ");
+        
+        let mut column = String::new();
+        io::stdin()
+            .read_line(&mut column)
+            .expect("Failed to read input");
+        
+        if column.trim() == "q" {
+            return WIDTH + 1;
+        } else {
+            let column: usize = match column.trim().parse() {
+                Ok(num) => num,
+                Err(_) => {
+                    println!("Please enter a number from 1 to {}", WIDTH);
+                    continue;
+                }
+            };
+            if column > WIDTH {
+                println!("Please enter a number from 1 to {}", WIDTH);
+                continue;
+            }
+            
+            return column;
+        }
+    }
+}
+
+fn place_piece(player: u8, column: usize) {
+    
 }
 
 // Print the board to console
