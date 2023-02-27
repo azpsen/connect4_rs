@@ -48,7 +48,7 @@ fn main() {
 fn get_player_input(player: u8, column_heights: &[usize; WIDTH]) -> usize {
     loop {
         print!("Player {player}, pick a column (q to quit): ");
-        io::stdout().flush();
+        io::stdout().flush().expect("I/O error");
         
         let mut column = String::new();
         io::stdin()
@@ -89,7 +89,6 @@ fn place_piece(board: &mut [char; WIDTH * HEIGHT], column_heights: &mut [usize; 
 // Find any horizontal 4-in-a-row sequences
 // Returns x or o depending on player, or ' ' if none are found
 fn get_horiz_sequence(board: &[char; WIDTH * HEIGHT]) -> char {
-    let mut count: u8 = 0;
     for i in 0..HEIGHT {
         for j in 0..WIDTH-3 {
             let elem = board[get_board_index(i, j)];
@@ -107,7 +106,6 @@ fn get_horiz_sequence(board: &[char; WIDTH * HEIGHT]) -> char {
 // Find any vertical 4-in-a-row sequences
 // Returns x or o depending on player, or ' ' if none are found
 fn get_vert_sequence(board: &[char; WIDTH * HEIGHT]) -> char {
-    let mut count: u8 = 0;
     for i in 0..HEIGHT-3 {
         for j in 0..WIDTH {
             let elem = board[get_board_index(i, j)];
@@ -125,7 +123,6 @@ fn get_vert_sequence(board: &[char; WIDTH * HEIGHT]) -> char {
 // Find any positive diagonal 4-in-a-row sequences
 // Returns x or o depending on player, or ' ' if none are found
 fn get_diag_sequence(board: &[char; WIDTH * HEIGHT]) -> char {
-    let mut count: u8 = 0;
     for i in 0..HEIGHT-3 {
         for j in 0..WIDTH-3 {
             let elem = board[get_board_index(i, j)];
@@ -143,7 +140,6 @@ fn get_diag_sequence(board: &[char; WIDTH * HEIGHT]) -> char {
 // Find any negative diagonal 4-in-a-row sequences
 // Returns x or o depending on player, or ' ' if none are found
 fn get_counter_diag_sequence(board: &[char; WIDTH * HEIGHT]) -> char {
-    let mut count: u8 = 0;
     for i in 0..HEIGHT-3 {
         for j in 3..WIDTH {
             let elem = board[get_board_index(i, j)];
