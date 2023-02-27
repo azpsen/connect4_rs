@@ -4,39 +4,40 @@ use std::io::Write;
 const WIDTH: usize = 7;
 const HEIGHT: usize = 6;
 
-const BOARD: [char; WIDTH * HEIGHT] = ['-'; WIDTH * HEIGHT];
-
 fn main() {
     println!("");
     println!("---- Welcome to Connect 4! ----");
     println!("");
+
+    let mut board: [char; WIDTH * HEIGHT] = ['-'; WIDTH * HEIGHT];
+    let mut column_heights: [usize; WIDTH] = [0; WIDTH];
     
-    show_board();
+    show_board(&board);
     
     loop {
-        let p1_column: usize = get_player_input(1);
+        let p1_column: usize = get_player_input(1, &column_heights);
         
         if p1_column == WIDTH + 1 {
             break;
         }
         
-        place_piece(1, p1_column);
+        place_piece(&mut board, &mut column_heights, 1, p1_column);
         
-        show_board();
+        show_board(&board);
         
-        let p2_column: usize = get_player_input(2);
+        let p2_column: usize = get_player_input(2, &column_heights);
         
         if p2_column == WIDTH + 1 {
             break;
         }
         
-        place_piece(2, p2_column);
+        place_piece(&mut board, &mut column_heights, 2, p2_column);
         
-        show_board();
+        show_board(&board);
     }
 }
 
-fn get_player_input(player: u8) -> usize {
+fn get_player_input(player: u8, column_heights: &[usize; WIDTH]) -> usize {
     loop {
         println!("Player {player}, pick a column (q to quit): ");
         
@@ -55,8 +56,14 @@ fn get_player_input(player: u8) -> usize {
                     continue;
                 }
             };
+            
             if column > WIDTH {
                 println!("Please enter a number from 1 to {}", WIDTH);
+                continue;
+            }
+            
+            if (column_heights[column] == HEIGHT) {
+                println!("That column is full");
                 continue;
             }
             
@@ -65,17 +72,18 @@ fn get_player_input(player: u8) -> usize {
     }
 }
 
-fn place_piece(player: u8, column: usize) {
-    
+fn place_piece(board: &mut [char; WIDTH * HEIGHT], column_heights: &mut [usize; WIDTH], player: u8, column: usize) {
+    board[(column - 1) * HEIGHT + (HEIGHT - column_heights[column] - 1)] = if player == 1 { 'x' } else { 'o' };
+    column_heights[column] += 1;
 }
 
 // Print the board to console
-fn show_board() {
+fn show_board(board: &[char; WIDTH * HEIGHT]) {
     println!("--- Board ---");
     
     for i in 0..HEIGHT {
         for j in 0..WIDTH {
-            print!("{} ", BOARD[j * HEIGHT + i]);
+            print!("{} ", board[j * HEIGHT + i]);
             io::stdout().flush().unwrap();
         }
         println!("");
