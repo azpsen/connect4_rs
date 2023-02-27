@@ -71,7 +71,7 @@ fn get_player_input(player: u8, column_heights: &[usize; WIDTH]) -> usize {
                 continue;
             }
             
-            if column_heights[column] == HEIGHT {
+            if column_heights[column - 1] == HEIGHT {
                 println!("That column is full");
                 continue;
             }
@@ -82,8 +82,8 @@ fn get_player_input(player: u8, column_heights: &[usize; WIDTH]) -> usize {
 }
 
 fn place_piece(board: &mut [char; WIDTH * HEIGHT], column_heights: &mut [usize; WIDTH], player: u8, column: usize) {
-    board[get_board_index(HEIGHT - column_heights[column] - 1, column - 1)] = if player == 1 { 'x' } else { 'o' };
-    column_heights[column] += 1;
+    board[get_board_index(HEIGHT - column_heights[column - 1] - 1, column - 1)] = if player == 1 { 'x' } else { 'o' };
+    column_heights[column - 1] += 1;
 }
 
 // Find any horizontal 4-in-a-row sequences
